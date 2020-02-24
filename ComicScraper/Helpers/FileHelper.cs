@@ -114,23 +114,31 @@ namespace ComicScraper.Helpers
 
         public static ResultModel Read_SettingsFile(out ComicSettingsModel settingsModel)
         {
-            var modelToReturn = Folder_Exists(settingsPath);
+            ResultModel modelToReturn = new ResultModel()
+            {
+                Result = Enums.ResultTypes.Error,
+                Data = Constants.Error,
+                Occurrence = DateTime.Now
+            };
+
+            var result = SettingsFile_Exists();
             settingsModel = null;
 
             try
             {
-                if (modelToReturn.Result == Enums.ResultTypes.Success)
+                if (result)
                 {
                     using (StreamReader r = new StreamReader(settingsPath))
                     {
                         settingsModel = JsonConvert.DeserializeObject<ComicSettingsModel>(r.ReadToEnd()) ?? null;
                     }
+
+                    modelToReturn.Result = Enums.ResultTypes.Success;
                 }
             }
             catch (Exception ex)
             {
                 modelToReturn.Data = $"{ex.Message}\n{ex.StackTrace}";
-                modelToReturn.Result = Enums.ResultTypes.Error;
             }
 
             return modelToReturn;
