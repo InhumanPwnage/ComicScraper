@@ -5,6 +5,7 @@ using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using ComicScraper.Helpers;
 using ComicScraper.Models;
@@ -17,15 +18,12 @@ namespace ComicScraper.Services
         private Uri scrapeAddress;
         private HtmlDocument documentToScrape;
         private string folderPathToSaveTo;
+        private bool useCustomNumbering;
 
         #region CTOR
         public Scraper(string link)
         {
-            scrapeAddress = new Uri(link);
-
-            var web = new HtmlWeb();
-
-            documentToScrape = web.Load(scrapeAddress);
+            PrepareDocument(new Uri(link));
         }
         #endregion
 
@@ -38,6 +36,8 @@ namespace ComicScraper.Services
                 Data = Constants.Error,
                 Result = Enums.ResultTypes.Error
             };
+
+            useCustomNumbering = model.Numbering;
 
             //check if Comics folder exists
             if (FileHelper.Folder_Exists(Constants.ComicsFolderName).Result == Enums.ResultTypes.Error)
@@ -113,18 +113,100 @@ namespace ComicScraper.Services
 
 
         #region Utility
+        private ResultModel PrepareDocument(Uri fullLink)
+        {
+            ResultModel modelToReturn = new ResultModel()
+            {
+                Data = Constants.Error,
+                Occurrence = DateTime.Now,
+                Result = Enums.ResultTypes.Error
+            };
+
+            try
+            {
+                var web = new HtmlWeb();
+
+                documentToScrape = web.Load(fullLink);
+
+                //var select = documentToScrape.DocumentNode.SelectNodes($"//meta[contains(@content, '{scrapeAddress}')]");
+
+                scrapeAddress = fullLink;
+
+                modelToReturn.Result = Enums.ResultTypes.Success;
+                modelToReturn.Data = string.Empty;
+            }
+            catch (Exception ex)
+            {
+                modelToReturn.Data = $"{ex.Message}\n{ex.StackTrace}";
+            }
+
+            return modelToReturn;
+        }
+
         private List<string> Get_Nodes(ComicModel model)
         {
-            //get the collection
-            var nodes = documentToScrape
-                .DocumentNode
-                .SelectNodes($@"{model.XPath}");
+            int pageCount = 1;
+            bool continueCheckingForImagesOverMultiplePages = model.QueryString != null && model.QueryString != string.Empty;
+            var listOfImageLinks = new List<string>();
+            int imagesPerPage = 0;
+            bool doNotAddToList;
 
-            //extract list of images
-            var listOfImageLinks = nodes.Descendants("img")
-                    .Select(img => img.GetAttributeValue("src", null))
-                    .Where(s => !String.IsNullOrEmpty(s))
-                    .ToList();
+            do
+            {
+                doNotAddToList = false;
+                pageCount++;
+
+                //get the collection
+                var nodes = documentToScrape
+                    .DocumentNode
+                    .SelectNodes($@"{model.XPath}");
+
+                var scrapedImageLinks = new List<string>();
+
+                //extract list of images
+                if (!model.ReplaceString.Equals(null) && !model.ReplaceString.Equals(string.Empty))
+                {
+                    foreach (var item in nodes.Descendants("img")
+                        .Select(img => img.GetAttributeValue("src", null))
+                        .Where(s => !String.IsNullOrEmpty(s)))
+                    {
+                        scrapedImageLinks.Add(item.Replace(model.ReplaceString, model.ReplaceWith));
+                    }
+                }
+                else
+                {
+                    scrapedImageLinks.AddRange(nodes.Descendants("img")
+                        .Select(img => img.GetAttributeValue("src", null))
+                        .Where(s => !String.IsNullOrEmpty(s)));
+                }
+
+                if (imagesPerPage < scrapedImageLinks.Count)
+                    imagesPerPage = scrapedImageLinks.Count;
+
+                if (continueCheckingForImagesOverMultiplePages)
+                {
+                    var resultModel = PrepareDocument(new Uri($@"{scrapeAddress}?{model.QueryString}={pageCount}"));
+
+                    //to check to see if the site has redirects instead of a custom error page for non-existant pages when trying to scrape for images over multiple pages, we will compare image names
+                    if (resultModel.Result == Enums.ResultTypes.Error || scrapedImageLinks.Count - imagesPerPage > 0)
+                    {
+                        //page not found (custom error page)
+                        continueCheckingForImagesOverMultiplePages = false;
+                    }
+                    else if (pageCount > 2 && 
+                        (listOfImageLinks[0].Equals(scrapedImageLinks[0]) || 
+                        scrapedImageLinks[scrapedImageLinks.Count-1].Equals(listOfImageLinks[((pageCount - 1) * imagesPerPage)-1])))
+                    {
+                        //image names case 1) very first image with newest page, case 2) newest page with last page
+                        continueCheckingForImagesOverMultiplePages = false;
+                        doNotAddToList = true;
+                    }
+                }
+
+                if(!doNotAddToList)
+                    listOfImageLinks.AddRange(scrapedImageLinks);
+            }
+            while (continueCheckingForImagesOverMultiplePages);
 
             if (model.AppendDomain || model.RemoveDimensions)
             {
@@ -151,21 +233,29 @@ namespace ComicScraper.Services
             return listOfImageLinks;
         }
 
+        /// <summary>
+        /// Parallel example https://stackoverflow.com/a/31044246
+        /// </summary>
+        /// <param name="urls"></param>
         private void Download(List<string> urls)
         {
             Parallel.ForEach(
-                urls,
-                new ParallelOptions { MaxDegreeOfParallelism = 10 },
-                DownloadFile);
+                urls, new ParallelOptions { MaxDegreeOfParallelism = 10 }, (line, state, index) => DownloadFile(line, index));
+
+            //Parallel.ForEach(
+            //    urls,
+            //    new ParallelOptions { MaxDegreeOfParallelism = 10 },
+            //    DownloadFile);
         }
 
-        private void DownloadFile(string url)
+        private void DownloadFile(string url, long index)
         {
-            Uri uri = new Uri(url);
-
             using (WebClient client = new WebClient())
             {
-                client.DownloadFile(url, $@"{folderPathToSaveTo}\{Path.GetFileName(uri.LocalPath.Split('/').Last())}");
+                if(!useCustomNumbering)
+                    client.DownloadFile(url, $@"{folderPathToSaveTo}\{TextHelper.GetImageNameFromLink(url)}");
+                else
+                    client.DownloadFile(url, $@"{folderPathToSaveTo}\{string.Format("{0:D3}", index)}{TextHelper.GetImageExtensionFromLink(url)}");
                 // OR 
                 //client.DownloadFileAsync(url, $@"{folderPathToSaveTo}\{Path.GetFileName(uri.LocalPath.Split('/').Last())}");
             }

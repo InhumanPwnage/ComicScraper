@@ -40,7 +40,12 @@ namespace ComicScraper
                 XPath = txtXpath.Text,
                 AppendDomain = chkAppendDomain.Checked,
                 RemoveDimensions = chkRemoveDimensions.Checked,
-                ListOfWordsToRemoveFromLink = txtWordsToRemove.Text.Split(',').ToList()
+                ListOfWordsToRemoveFromLink = txtWordsToRemove.Text.Split(',').ToList(),
+
+                QueryString = txtMultiplePagesQueryString.Text.Trim(),
+                Numbering = chkNumbering.Checked,
+                ReplaceString = txtReplace.Text,
+                ReplaceWith = txtWith.Text
             };
 
             _scraper = new Scraper(txtTestComicLink.Text);
@@ -60,7 +65,12 @@ namespace ComicScraper
                 XPath = txtXpath.Text,
                 AppendDomain = chkAppendDomain.Checked,
                 RemoveDimensions = chkRemoveDimensions.Checked,
-                ListOfWordsToRemoveFromLink = txtWordsToRemove.Text.Split(',').ToList()
+                ListOfWordsToRemoveFromLink = txtWordsToRemove.Text.Split(',').ToList(),
+
+                QueryString = txtMultiplePagesQueryString.Text.Trim(),
+                Numbering = chkNumbering.Checked,
+                ReplaceString = txtReplace.Text,
+                ReplaceWith = txtWith.Text
             };
 
             var result = FileHelper.Add_ComicSite(model);

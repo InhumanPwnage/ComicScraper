@@ -13,8 +13,14 @@ namespace ComicScraper.Models
         public DateTime DateAdded { get; set; }
         public string Link { get; set; }
         public string XPath { get; set; }
+
         public List<string> ListOfWordsToRemoveFromLink { get; set; }
         public bool AppendDomain { get; set; }
         public bool RemoveDimensions { get; set; }
+
+        public string QueryString { get; set; }
+        public bool Numbering { get; set; }
+        public string ReplaceString { get; set; }
+        public string ReplaceWith { get; set; }
     }
 }
