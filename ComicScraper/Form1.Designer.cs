@@ -56,6 +56,10 @@
             this.lblReplaceWith = new System.Windows.Forms.Label();
             this.txtWith = new System.Windows.Forms.TextBox();
             this.chkNumbering = new System.Windows.Forms.CheckBox();
+            this.txtXpathComicTitle = new System.Windows.Forms.TextBox();
+            this.label2 = new System.Windows.Forms.Label();
+            this.lblTagInsideImage = new System.Windows.Forms.Label();
+            this.txtTagInsideImageAttribute = new System.Windows.Forms.TextBox();
             this.tabOptions.SuspendLayout();
             this.tabScrape.SuspendLayout();
             this.tabAddSite.SuspendLayout();
@@ -68,7 +72,7 @@
             this.tabOptions.Location = new System.Drawing.Point(1, 1);
             this.tabOptions.Name = "tabOptions";
             this.tabOptions.SelectedIndex = 0;
-            this.tabOptions.Size = new System.Drawing.Size(447, 230);
+            this.tabOptions.Size = new System.Drawing.Size(447, 302);
             this.tabOptions.TabIndex = 0;
             // 
             // tabScrape
@@ -82,7 +86,7 @@
             this.tabScrape.Location = new System.Drawing.Point(4, 22);
             this.tabScrape.Name = "tabScrape";
             this.tabScrape.Padding = new System.Windows.Forms.Padding(3);
-            this.tabScrape.Size = new System.Drawing.Size(495, 181);
+            this.tabScrape.Size = new System.Drawing.Size(439, 250);
             this.tabScrape.TabIndex = 0;
             this.tabScrape.Text = "Scrape";
             this.tabScrape.UseVisualStyleBackColor = true;
@@ -131,6 +135,7 @@
             this.cmbSites.Name = "cmbSites";
             this.cmbSites.Size = new System.Drawing.Size(157, 21);
             this.cmbSites.TabIndex = 10;
+            this.cmbSites.SelectedIndexChanged += new System.EventHandler(this.cmbSites_SelectedIndexChanged);
             // 
             // lblFromSite
             // 
@@ -143,6 +148,10 @@
             // 
             // tabAddSite
             // 
+            this.tabAddSite.Controls.Add(this.txtTagInsideImageAttribute);
+            this.tabAddSite.Controls.Add(this.lblTagInsideImage);
+            this.tabAddSite.Controls.Add(this.label2);
+            this.tabAddSite.Controls.Add(this.txtXpathComicTitle);
             this.tabAddSite.Controls.Add(this.chkNumbering);
             this.tabAddSite.Controls.Add(this.txtWith);
             this.tabAddSite.Controls.Add(this.lblReplaceWith);
@@ -165,7 +174,7 @@
             this.tabAddSite.Location = new System.Drawing.Point(4, 22);
             this.tabAddSite.Name = "tabAddSite";
             this.tabAddSite.Padding = new System.Windows.Forms.Padding(3);
-            this.tabAddSite.Size = new System.Drawing.Size(439, 204);
+            this.tabAddSite.Size = new System.Drawing.Size(439, 276);
             this.tabAddSite.TabIndex = 1;
             this.tabAddSite.Text = "Add Site";
             this.tabAddSite.UseVisualStyleBackColor = true;
@@ -173,7 +182,7 @@
             // chkRemoveDimensions
             // 
             this.chkRemoveDimensions.AutoSize = true;
-            this.chkRemoveDimensions.Location = new System.Drawing.Point(255, 153);
+            this.chkRemoveDimensions.Location = new System.Drawing.Point(255, 198);
             this.chkRemoveDimensions.Name = "chkRemoveDimensions";
             this.chkRemoveDimensions.Size = new System.Drawing.Size(169, 17);
             this.chkRemoveDimensions.TabIndex = 11;
@@ -192,7 +201,7 @@
             // 
             // txtWordsToRemove
             // 
-            this.txtWordsToRemove.Location = new System.Drawing.Point(163, 125);
+            this.txtWordsToRemove.Location = new System.Drawing.Point(163, 170);
             this.txtWordsToRemove.Name = "txtWordsToRemove";
             this.txtWordsToRemove.Size = new System.Drawing.Size(83, 20);
             this.txtWordsToRemove.TabIndex = 8;
@@ -200,16 +209,16 @@
             // label1
             // 
             this.label1.AutoSize = true;
-            this.label1.Location = new System.Drawing.Point(40, 128);
+            this.label1.Location = new System.Drawing.Point(7, 173);
             this.label1.Name = "label1";
-            this.label1.Size = new System.Drawing.Size(117, 13);
+            this.label1.Size = new System.Drawing.Size(154, 13);
             this.label1.TabIndex = 21;
-            this.label1.Text = "CSV Words to Remove";
+            this.label1.Text = "CSV Words to Remove from url";
             // 
             // lblTestComic
             // 
             this.lblTestComic.AutoSize = true;
-            this.lblTestComic.Location = new System.Drawing.Point(6, 81);
+            this.lblTestComic.Location = new System.Drawing.Point(6, 126);
             this.lblTestComic.Name = "lblTestComic";
             this.lblTestComic.Size = new System.Drawing.Size(60, 13);
             this.lblTestComic.TabIndex = 20;
@@ -217,14 +226,14 @@
             // 
             // txtTestComicLink
             // 
-            this.txtTestComicLink.Location = new System.Drawing.Point(9, 97);
+            this.txtTestComicLink.Location = new System.Drawing.Point(9, 142);
             this.txtTestComicLink.Name = "txtTestComicLink";
             this.txtTestComicLink.Size = new System.Drawing.Size(340, 20);
             this.txtTestComicLink.TabIndex = 7;
             // 
             // btnTest
             // 
-            this.btnTest.Location = new System.Drawing.Point(355, 95);
+            this.btnTest.Location = new System.Drawing.Point(355, 140);
             this.btnTest.Name = "btnTest";
             this.btnTest.Size = new System.Drawing.Size(75, 23);
             this.btnTest.TabIndex = 14;
@@ -234,7 +243,7 @@
             // 
             // btnAdd
             // 
-            this.btnAdd.Location = new System.Drawing.Point(355, 123);
+            this.btnAdd.Location = new System.Drawing.Point(355, 168);
             this.btnAdd.Name = "btnAdd";
             this.btnAdd.Size = new System.Drawing.Size(75, 23);
             this.btnAdd.TabIndex = 15;
@@ -270,14 +279,14 @@
             this.lblPathToCollection.AutoSize = true;
             this.lblPathToCollection.Location = new System.Drawing.Point(6, 42);
             this.lblPathToCollection.Name = "lblPathToCollection";
-            this.lblPathToCollection.Size = new System.Drawing.Size(101, 13);
+            this.lblPathToCollection.Size = new System.Drawing.Size(173, 13);
             this.lblPathToCollection.TabIndex = 22;
-            this.lblPathToCollection.Text = "XPath To Collection";
+            this.lblPathToCollection.Text = "XPath To Collection/Grid of images";
             // 
             // lblMultiplePagesQueryString
             // 
             this.lblMultiplePagesQueryString.AutoSize = true;
-            this.lblMultiplePagesQueryString.Location = new System.Drawing.Point(23, 154);
+            this.lblMultiplePagesQueryString.Location = new System.Drawing.Point(23, 199);
             this.lblMultiplePagesQueryString.Name = "lblMultiplePagesQueryString";
             this.lblMultiplePagesQueryString.Size = new System.Drawing.Size(131, 13);
             this.lblMultiplePagesQueryString.TabIndex = 24;
@@ -285,7 +294,7 @@
             // 
             // txtMultiplePagesQueryString
             // 
-            this.txtMultiplePagesQueryString.Location = new System.Drawing.Point(163, 151);
+            this.txtMultiplePagesQueryString.Location = new System.Drawing.Point(163, 196);
             this.txtMultiplePagesQueryString.Name = "txtMultiplePagesQueryString";
             this.txtMultiplePagesQueryString.Size = new System.Drawing.Size(83, 20);
             this.txtMultiplePagesQueryString.TabIndex = 10;
@@ -293,7 +302,7 @@
             // lblDownloadReplace
             // 
             this.lblDownloadReplace.AutoSize = true;
-            this.lblDownloadReplace.Location = new System.Drawing.Point(6, 180);
+            this.lblDownloadReplace.Location = new System.Drawing.Point(6, 225);
             this.lblDownloadReplace.Name = "lblDownloadReplace";
             this.lblDownloadReplace.Size = new System.Drawing.Size(154, 13);
             this.lblDownloadReplace.TabIndex = 26;
@@ -301,7 +310,7 @@
             // 
             // txtReplace
             // 
-            this.txtReplace.Location = new System.Drawing.Point(163, 177);
+            this.txtReplace.Location = new System.Drawing.Point(163, 222);
             this.txtReplace.Name = "txtReplace";
             this.txtReplace.Size = new System.Drawing.Size(83, 20);
             this.txtReplace.TabIndex = 12;
@@ -309,7 +318,7 @@
             // lblReplaceWith
             // 
             this.lblReplaceWith.AutoSize = true;
-            this.lblReplaceWith.Location = new System.Drawing.Point(252, 180);
+            this.lblReplaceWith.Location = new System.Drawing.Point(252, 225);
             this.lblReplaceWith.Name = "lblReplaceWith";
             this.lblReplaceWith.Size = new System.Drawing.Size(29, 13);
             this.lblReplaceWith.TabIndex = 28;
@@ -317,7 +326,7 @@
             // 
             // txtWith
             // 
-            this.txtWith.Location = new System.Drawing.Point(285, 177);
+            this.txtWith.Location = new System.Drawing.Point(285, 222);
             this.txtWith.Name = "txtWith";
             this.txtWith.Size = new System.Drawing.Size(102, 20);
             this.txtWith.TabIndex = 13;
@@ -325,18 +334,50 @@
             // chkNumbering
             // 
             this.chkNumbering.AutoSize = true;
-            this.chkNumbering.Location = new System.Drawing.Point(255, 127);
+            this.chkNumbering.Location = new System.Drawing.Point(255, 172);
             this.chkNumbering.Name = "chkNumbering";
             this.chkNumbering.Size = new System.Drawing.Size(94, 17);
             this.chkNumbering.TabIndex = 9;
             this.chkNumbering.Text = "Do Numbering";
             this.chkNumbering.UseVisualStyleBackColor = true;
             // 
+            // txtXpathComicTitle
+            // 
+            this.txtXpathComicTitle.Location = new System.Drawing.Point(9, 97);
+            this.txtXpathComicTitle.Name = "txtXpathComicTitle";
+            this.txtXpathComicTitle.Size = new System.Drawing.Size(421, 20);
+            this.txtXpathComicTitle.TabIndex = 29;
+            // 
+            // label2
+            // 
+            this.label2.AutoSize = true;
+            this.label2.Location = new System.Drawing.Point(7, 81);
+            this.label2.Name = "label2";
+            this.label2.Size = new System.Drawing.Size(103, 13);
+            this.label2.TabIndex = 30;
+            this.label2.Text = "XPath to Comic Title";
+            // 
+            // lblTagInsideImage
+            // 
+            this.lblTagInsideImage.AutoSize = true;
+            this.lblTagInsideImage.Location = new System.Drawing.Point(33, 251);
+            this.lblTagInsideImage.Name = "lblTagInsideImage";
+            this.lblTagInsideImage.Size = new System.Drawing.Size(128, 13);
+            this.lblTagInsideImage.TabIndex = 31;
+            this.lblTagInsideImage.Text = "Tag inside image attribute";
+            // 
+            // txtTagInsideImageAttribute
+            // 
+            this.txtTagInsideImageAttribute.Location = new System.Drawing.Point(163, 248);
+            this.txtTagInsideImageAttribute.Name = "txtTagInsideImageAttribute";
+            this.txtTagInsideImageAttribute.Size = new System.Drawing.Size(83, 20);
+            this.txtTagInsideImageAttribute.TabIndex = 32;
+            // 
             // Form1
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(448, 232);
+            this.ClientSize = new System.Drawing.Size(448, 304);
             this.Controls.Add(this.tabOptions);
             this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedSingle;
             this.Name = "Form1";
@@ -382,6 +423,10 @@
         private System.Windows.Forms.Label lblDownloadReplace;
         private System.Windows.Forms.TextBox txtMultiplePagesQueryString;
         private System.Windows.Forms.Label lblMultiplePagesQueryString;
+        private System.Windows.Forms.Label label2;
+        private System.Windows.Forms.TextBox txtXpathComicTitle;
+        private System.Windows.Forms.TextBox txtTagInsideImageAttribute;
+        private System.Windows.Forms.Label lblTagInsideImage;
     }
 }
 

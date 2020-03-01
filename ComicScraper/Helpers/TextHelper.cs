@@ -19,7 +19,7 @@ namespace ComicScraper.Helpers
 
             //}
 
-            return uriAddress.Authority;
+            return uriAddress.Authority.Replace("www.", string.Empty);
         }
 
         public static string WebsiteNameFromLink(this string link)
@@ -48,6 +48,11 @@ namespace ComicScraper.Helpers
             //Path.GetFileName(new Uri(linkToImage).LocalPath.Split('/').Last());
             //Regex.Match(linkToImage, @"([0-9a-zA-Z\._-]+.(png|PNG|gif|GIF|jp[e]?g|JP[E]?G))").Value;
             Regex.Match(linkToImage, @"([0-9a-zA-Z\._-]+.(png|PNG|gif|GIF|jp[e]?g|JP[E]?G))").Value;
+        }
+
+        public static bool StringIsWebsite(this string website)
+        {
+            return Regex.Match(website, @"^(https?:\/\/)?([\w\d-_]+)\.([\w\d-_\.]+)\/?\??([^#\n\r]*)?#?([^\n\r]*)").Captures.Count > 0;
         }
     }
 }

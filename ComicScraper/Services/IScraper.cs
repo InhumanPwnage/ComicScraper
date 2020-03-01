@@ -9,7 +9,7 @@ namespace ComicScraper.Services
 {
     public interface IScraper
     {
-        ResultModel Scrape_Comic(ComicModel model, string comicName);
+        ResultModel Scrape_Comic(ComicModel model);
 
         ResultModel Test_Scrape_Comic(ComicModel model);
     }

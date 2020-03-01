@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Newtonsoft.Json;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -22,5 +23,11 @@ namespace ComicScraper.Models
         public bool Numbering { get; set; }
         public string ReplaceString { get; set; }
         public string ReplaceWith { get; set; }
+
+        public string XPathComicName { get; set; }
+        public string TagNameInsideImage { get; set; }
+
+        [JsonIgnore]
+        public string ComicLink { get; set; }
     }
 }

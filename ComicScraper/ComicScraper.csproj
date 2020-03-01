@@ -60,6 +60,7 @@
     </Compile>
     <Compile Include="Helpers\EnumHelper.cs" />
     <Compile Include="Helpers\FileHelper.cs" />
+    <Compile Include="Helpers\LinqHelper.cs" />
     <Compile Include="Helpers\TextHelper.cs" />
     <Compile Include="Models\ComicModel.cs" />
     <Compile Include="Models\ComicSettingsModel.cs" />

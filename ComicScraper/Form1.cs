@@ -32,21 +32,7 @@ namespace ComicScraper
 
         private void btnTest_Click(object sender, EventArgs e)
         {
-            ComicModel model = new ComicModel()
-            {
-                Name = TextHelper.NameFromLink(txtSiteLink.Text),
-                DateAdded = DateTime.Now,
-                Link = txtSiteLink.Text,
-                XPath = txtXpath.Text,
-                AppendDomain = chkAppendDomain.Checked,
-                RemoveDimensions = chkRemoveDimensions.Checked,
-                ListOfWordsToRemoveFromLink = txtWordsToRemove.Text.Split(',').ToList(),
-
-                QueryString = txtMultiplePagesQueryString.Text.Trim(),
-                Numbering = chkNumbering.Checked,
-                ReplaceString = txtReplace.Text,
-                ReplaceWith = txtWith.Text
-            };
+            ComicModel model = Create_ComicModelFromForm();
 
             _scraper = new Scraper(txtTestComicLink.Text);
 
@@ -57,21 +43,7 @@ namespace ComicScraper
 
         private void btnAdd_Click(object sender, EventArgs e)
         {
-            ComicModel model = new ComicModel()
-            {
-                Name = TextHelper.NameFromLink(txtSiteLink.Text),
-                DateAdded = DateTime.Now,
-                Link = txtSiteLink.Text,
-                XPath = txtXpath.Text,
-                AppendDomain = chkAppendDomain.Checked,
-                RemoveDimensions = chkRemoveDimensions.Checked,
-                ListOfWordsToRemoveFromLink = txtWordsToRemove.Text.Split(',').ToList(),
-
-                QueryString = txtMultiplePagesQueryString.Text.Trim(),
-                Numbering = chkNumbering.Checked,
-                ReplaceString = txtReplace.Text,
-                ReplaceWith = txtWith.Text
-            };
+            ComicModel model = Create_ComicModelFromForm();
 
             var result = FileHelper.Add_ComicSite(model);
 
@@ -92,6 +64,10 @@ namespace ComicScraper
             MessageBox.Show(result.Data, result.Result.ToName(), MessageBoxButtons.OK, SelectIcon(result.Result));
         }
 
+        /// <summary>
+        /// Updates the Comics dropdown field.
+        /// </summary>
+        /// <param name="listOfComics"></param>
         private void Refresh_Sites(List<ComicModel> listOfComics)
         {
             if (cmbSites.DataSource == null)
@@ -103,6 +79,8 @@ namespace ComicScraper
             cmbSites.ValueMember = "Id";
 
             cmbSites.DataSource = listOfComics;
+
+            CheckIfSelectedItemIsValid();
         }
 
         private void Form1_Load(object sender, EventArgs e)
@@ -131,15 +109,29 @@ namespace ComicScraper
 
         private void btnScrape_Click(object sender, EventArgs e)
         {
-            var item = (ComicModel)cmbSites.SelectedItem;
+            if (cmbSites.SelectedItem is ComicModel && TextHelper.StringIsWebsite(txtLinkToComic.Text))
+            {
+                var item = (ComicModel)cmbSites.SelectedItem;
 
-            _scraper = new Scraper(txtLinkToComic.Text);
+                item.ComicLink = txtLinkToComic.Text;
 
-            var result = _scraper.Scrape_Comic(item, txtLinkToComic.Text);
+                _scraper = new Scraper(item.ComicLink);
 
-            MessageBox.Show(result.Data, result.Result.ToName(), MessageBoxButtons.OK, SelectIcon(result.Result));
+                var result = _scraper.Scrape_Comic(item);
+
+                MessageBox.Show(result.Data, result.Result.ToName(), MessageBoxButtons.OK, SelectIcon(result.Result));
+            }
+            else
+            {
+                MessageBox.Show(Constants.NoComicSite, Enums.ResultTypes.NoAction.ToName(), MessageBoxButtons.OK, SelectIcon(Enums.ResultTypes.NoAction));
+            }
         }
 
+        /// <summary>
+        /// Pick the appropriate Message Box Icon and message to display according to Result type.
+        /// </summary>
+        /// <param name="result"></param>
+        /// <returns></returns>
         private MessageBoxIcon SelectIcon(Enums.ResultTypes result)
         {
             MessageBoxIcon iconToUse = MessageBoxIcon.None;
@@ -184,6 +176,50 @@ namespace ComicScraper
         private void Form1_FormClosing(object sender, FormClosingEventArgs e)
         {
             //System.Diagnostics.Process.GetCurrentProcess().Kill();
+        }
+
+        private void cmbSites_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            CheckIfSelectedItemIsValid();
+        }
+
+        private void CheckIfSelectedItemIsValid()
+        {
+            if (!(cmbSites.SelectedItem is ComicModel))
+            {
+                btnScrape.Enabled = false;
+            }
+            else
+            {
+                btnScrape.Enabled = true;
+            }
+        }
+
+        /// <summary>
+        /// Grabs Form data and formats it into an object for re-use.
+        /// </summary>
+        /// <returns></returns>
+        private ComicModel Create_ComicModelFromForm()
+        {
+            return new ComicModel()
+            {
+                Name = TextHelper.NameFromLink(txtSiteLink.Text),
+                DateAdded = DateTime.Now,
+                Link = txtSiteLink.Text,
+                XPath = txtXpath.Text,
+                AppendDomain = chkAppendDomain.Checked,
+                RemoveDimensions = chkRemoveDimensions.Checked,
+                ListOfWordsToRemoveFromLink = txtWordsToRemove.Text.Split(',').ToUniqueList(),
+
+                QueryString = txtMultiplePagesQueryString.Text.Trim(),
+                Numbering = chkNumbering.Checked,
+                ReplaceString = txtReplace.Text,
+                ReplaceWith = txtWith.Text,
+
+                XPathComicName = txtXpathComicTitle.Text,
+                TagNameInsideImage = txtTagInsideImageAttribute.Text,
+                ComicLink = txtTestComicLink.Text
+            };
         }
     }
 }

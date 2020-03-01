@@ -28,7 +28,7 @@ namespace ComicScraper.Services
         #endregion
 
 
-        public ResultModel Scrape_Comic(ComicModel model, string comicName)
+        public ResultModel Scrape_Comic(ComicModel model)
         {
             ResultModel modelToReturn = new ResultModel()
             {
@@ -54,7 +54,7 @@ namespace ComicScraper.Services
             }
 
             //Create folder for comic to download to with UNIX to make unique
-            var comicNameFromUri = new Uri(comicName).LocalPath;
+            var comicNameFromUri = Get_ComicName(model);
 
             foreach (var word in model.ListOfWordsToRemoveFromLink)
             {
@@ -100,7 +100,7 @@ namespace ComicScraper.Services
                 var listOfImageLinks = Get_Nodes(model);
 
                 //return the list of images
-                modelToReturn.Data = $@"Found {listOfImageLinks.Count} items.{Environment.NewLine}{string.Join("\n", listOfImageLinks.Take(10))}";
+                modelToReturn.Data = $@"{Get_ComicName(model)} has {listOfImageLinks.Count} items.{Environment.NewLine}{listOfImageLinks[0]}{Environment.NewLine}{listOfImageLinks[listOfImageLinks.Count/2]}{Environment.NewLine}{listOfImageLinks[listOfImageLinks.Count-1]}{Environment.NewLine} . . .";
                 modelToReturn.Result = Enums.ResultTypes.Success;
             }
             catch (Exception ex)
@@ -163,21 +163,39 @@ namespace ComicScraper.Services
 
                 var scrapedImageLinks = new List<string>();
 
-                //extract list of images
-                if (!model.ReplaceString.Equals(null) && !model.ReplaceString.Equals(string.Empty))
-                {
-                    foreach (var item in nodes.Descendants("img")
-                        .Select(img => img.GetAttributeValue("src", null))
+                var srcTag = model.TagNameInsideImage.Equals(string.Empty) ? Constants.DefaultAttributeToLookForInImage : model.TagNameInsideImage;
+
+                //https://stackoverflow.com/a/17158393
+                foreach (var item in nodes.Descendants("img")
+                        .Select(img => WebUtility.HtmlDecode(img.GetAttributeValue(srcTag, null)))
                         .Where(s => !String.IsNullOrEmpty(s)))
-                    {
-                        scrapedImageLinks.Add(item.Replace(model.ReplaceString, model.ReplaceWith));
-                    }
-                }
-                else
                 {
-                    scrapedImageLinks.AddRange(nodes.Descendants("img")
-                        .Select(img => img.GetAttributeValue("src", null))
-                        .Where(s => !String.IsNullOrEmpty(s)));
+                    StringBuilder baseUrl = new StringBuilder();
+
+                    var url = string.Empty;
+
+                    if (model.AppendDomain)
+                        baseUrl.Append(model.Link);
+
+                    if (!model.ReplaceString.Equals(string.Empty) || model.RemoveDimensions)
+                    {
+                        if(!model.ReplaceString.Equals(string.Empty))
+                            url = item.Replace(model.ReplaceString, model.ReplaceWith);
+
+                        if (model.RemoveDimensions)
+                        {
+                            if (string.IsNullOrEmpty(url))
+                                url = item.RemoveDimensionsFromLink();
+                            else
+                                url = url.RemoveDimensionsFromLink();
+                        }
+                    }
+                    else
+                    {
+                        baseUrl.Append(item);
+                    }
+ 
+                    scrapedImageLinks.Add(baseUrl.ToString() + url);
                 }
 
                 if (imagesPerPage < scrapedImageLinks.Count)
@@ -188,14 +206,14 @@ namespace ComicScraper.Services
                     var resultModel = PrepareDocument(new Uri($@"{scrapeAddress}?{model.QueryString}={pageCount}"));
 
                     //to check to see if the site has redirects instead of a custom error page for non-existant pages when trying to scrape for images over multiple pages, we will compare image names
-                    if (resultModel.Result == Enums.ResultTypes.Error || scrapedImageLinks.Count - imagesPerPage > 0)
+                    if (resultModel.Result == Enums.ResultTypes.Error || scrapedImageLinks.Count - imagesPerPage < 0)
                     {
                         //page not found (custom error page)
                         continueCheckingForImagesOverMultiplePages = false;
                     }
                     else if (pageCount > 2 && 
                         (listOfImageLinks[0].Equals(scrapedImageLinks[0]) || 
-                        scrapedImageLinks[scrapedImageLinks.Count-1].Equals(listOfImageLinks[((pageCount - 1) * imagesPerPage)-1])))
+                        scrapedImageLinks[scrapedImageLinks.Count-1].Equals(listOfImageLinks[((pageCount - 2) * imagesPerPage)-1])))
                     {
                         //image names case 1) very first image with newest page, case 2) newest page with last page
                         continueCheckingForImagesOverMultiplePages = false;
@@ -208,29 +226,38 @@ namespace ComicScraper.Services
             }
             while (continueCheckingForImagesOverMultiplePages);
 
-            if (model.AppendDomain || model.RemoveDimensions)
+            return listOfImageLinks;
+        }
+
+        private string Get_ComicName(ComicModel model)
+        {
+            var comicName = string.Empty;
+
+            if (model.XPathComicName != null && model.XPathComicName != string.Empty)
             {
-                var newList = new List<string>();
+                var titleNode = documentToScrape
+                    .DocumentNode
+                    .SelectSingleNode($@"{model.XPathComicName}");
 
-                foreach (var item in listOfImageLinks)
+                comicName = titleNode.InnerText;
+            }
+            else
+            {
+                var strings = model.ComicLink.Split('/').ToUniqueList();
+
+                //var testUri = new Uri(model.ComicLink);
+                int index = strings.Count - 1;
+
+                //.IndexOf("string", StringComparison.OrdinalIgnoreCase) >= 0
+                if (Constants.WordsToRemove.Any(w => strings[index].IndexOf(w, StringComparison.OrdinalIgnoreCase) >= 0))
                 {
-                    StringBuilder sb = new StringBuilder();
-
-                    if (model.AppendDomain)
-                        sb.Append(model.Link);
-
-                    if (model.RemoveDimensions)
-                        sb.Append(item.RemoveDimensionsFromLink());
-                    else
-                        sb.Append(item);
-
-                    newList.Add(sb.ToString());
+                    index--;
                 }
 
-                listOfImageLinks = newList;
+                comicName = strings[index].Replace('-', ' ');//testUri.LocalPath;
             }
 
-            return listOfImageLinks;
+            return WebUtility.HtmlDecode(comicName);
         }
 
         /// <summary>
