@@ -26,6 +26,14 @@ namespace ComicScraper.Models
 
         public string XPathComicName { get; set; }
         public string TagNameInsideImage { get; set; }
+        public string TagToLookFor { get; set; }
+        public string ReplaceImageExtensionWith { get; set; }
+        public string ReplaceTextInImageNames { get; set; }
+        public string ReplaceTextInImageNamesWith { get; set; }
+        public bool DoubleCheckLinks { get; set; }
+
+        //public bool PromptForHtmlIfLinkFails { get; set; }
+
 
         [JsonIgnore]
         public string ComicLink { get; set; }

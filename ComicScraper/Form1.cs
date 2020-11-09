@@ -18,7 +18,6 @@ namespace ComicScraper
 {
     public partial class Form1 : Form
     {
-        private Scraper _scraper;
 
         public Form1()
         {
@@ -32,13 +31,31 @@ namespace ComicScraper
 
         private void btnTest_Click(object sender, EventArgs e)
         {
-            ComicModel model = Create_ComicModelFromForm();
+            if (!string.IsNullOrEmpty(txtSiteLink.Text) && !string.IsNullOrEmpty(txtXpath.Text))
+            {
+                ComicModel model = Create_ComicModelFromForm();
 
-            _scraper = new Scraper(txtTestComicLink.Text);
+                load_TestForm(model, false);
+            }
+            else
+            {
+                MessageBox.Show("Please enter a valid Site URL and XPath to the gallery of images on the page", "Insufficient Data", MessageBoxButtons.OK, FormsHelper.SelectIcon(Enums.ResultTypes.NoAction));
+            }
+                
+        }
 
-            var result = _scraper.Test_Scrape_Comic(model);
+        /// <summary>
+        /// https://stackoverflow.com/questions/3965043/how-to-open-a-new-form-from-another-form
+        /// </summary>
+        /// <param name="comicModel"></param>
+        private void load_TestForm(ComicModel comicModel, bool isProperScrape) 
+        {
+            TestForm testForm = new TestForm(comicModel, isProperScrape);
 
-            MessageBox.Show(result.Data, result.Result.ToName(), MessageBoxButtons.OK, SelectIcon(result.Result));
+            testForm.ShowDialog();
+
+            //testForm.Show();
+            //this.Close();
         }
 
         private void btnAdd_Click(object sender, EventArgs e)
@@ -61,7 +78,7 @@ namespace ComicScraper
                 } 
             }
 
-            MessageBox.Show(result.Data, result.Result.ToName(), MessageBoxButtons.OK, SelectIcon(result.Result));
+            MessageBox.Show(result.Data, result.Result.ToName(), MessageBoxButtons.OK, FormsHelper.SelectIcon(result.Result));
         }
 
         /// <summary>
@@ -104,73 +121,29 @@ namespace ComicScraper
             else
                 result.Data = Constants.Error;
 
-            MessageBox.Show(result.Data, result.Result.ToName(), MessageBoxButtons.OK, SelectIcon(result.Result));
+            MessageBox.Show(result.Data, result.Result.ToName(), MessageBoxButtons.OK, FormsHelper.SelectIcon(result.Result));
         }
 
         private void btnScrape_Click(object sender, EventArgs e)
         {
-            if (cmbSites.SelectedItem is ComicModel && TextHelper.StringIsWebsite(txtLinkToComic.Text))
+            if (cmbSites.SelectedItem is ComicModel)
             {
                 var item = (ComicModel)cmbSites.SelectedItem;
 
-                item.ComicLink = txtLinkToComic.Text;
+                load_TestForm(item, true);
 
-                _scraper = new Scraper(item.ComicLink);
+                //item.ComicLink = txtLinkToComic.Text;
 
-                var result = _scraper.Scrape_Comic(item);
+                //_scraper = new Scraper(item.ComicLink);
 
-                MessageBox.Show(result.Data, result.Result.ToName(), MessageBoxButtons.OK, SelectIcon(result.Result));
+                //var result = _scraper.Scrape_Comic(item);
+
+                //MessageBox.Show(result.Data, result.Result.ToName(), MessageBoxButtons.OK, FormsHelper.SelectIcon(result.Result));
             }
             else
             {
-                MessageBox.Show(Constants.NoComicSite, Enums.ResultTypes.NoAction.ToName(), MessageBoxButtons.OK, SelectIcon(Enums.ResultTypes.NoAction));
+                MessageBox.Show(Constants.NoComicSite, Enums.ResultTypes.NoAction.ToName(), MessageBoxButtons.OK, FormsHelper.SelectIcon(Enums.ResultTypes.NoAction));
             }
-        }
-
-        /// <summary>
-        /// Pick the appropriate Message Box Icon and message to display according to Result type.
-        /// </summary>
-        /// <param name="result"></param>
-        /// <returns></returns>
-        private MessageBoxIcon SelectIcon(Enums.ResultTypes result)
-        {
-            MessageBoxIcon iconToUse = MessageBoxIcon.None;
-
-            switch (result)
-            {
-                case Enums.ResultTypes.Error:
-                    {
-                        iconToUse = MessageBoxIcon.Error;
-                        break;
-                    }
-                case Enums.ResultTypes.Success:
-                    {
-                        iconToUse = MessageBoxIcon.Information;
-                        break;
-                    }
-                case Enums.ResultTypes.NoAction:
-                    {
-                        iconToUse = MessageBoxIcon.Question;
-                        break;
-                    }
-                case Enums.ResultTypes.Overwrite:
-                    {
-                        iconToUse = MessageBoxIcon.Warning;
-                        break;
-                    }
-                case Enums.ResultTypes.SettingsNotFound:
-                    {
-                        iconToUse = MessageBoxIcon.Exclamation;
-                        break;
-                    }
-                case Enums.ResultTypes.SuccessDelete:
-                    {
-                        iconToUse = MessageBoxIcon.Information;
-                        break;
-                    }
-            }
-
-            return iconToUse;
         }
 
         private void Form1_FormClosing(object sender, FormClosingEventArgs e)
@@ -218,8 +191,20 @@ namespace ComicScraper
 
                 XPathComicName = txtXpathComicTitle.Text,
                 TagNameInsideImage = txtTagInsideImageAttribute.Text,
-                ComicLink = txtTestComicLink.Text
+                TagToLookFor = txtTagToLookFor.Text,
+                //ComicLink = txtLinkToComic.Text,//txtTestComicLink.Text,
+                //PromptForHtmlIfLinkFails = chkPromptForHtmlIfLinkFails.Checked,
+                DoubleCheckLinks = chkDoubleCheckLinks.Checked,
+                ReplaceImageExtensionWith = txtImageExtension.Text,
+
+                ReplaceTextInImageNames = txtReplaceTextInImages.Text,
+                ReplaceTextInImageNamesWith = txtTextToUseForImageNameReplace.Text
             };
+        }
+
+        private void lblTagInsideImage_Click(object sender, EventArgs e)
+        {
+
         }
     }
 }

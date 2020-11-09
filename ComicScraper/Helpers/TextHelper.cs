@@ -54,5 +54,40 @@ namespace ComicScraper.Helpers
         {
             return Regex.Match(website, @"^(https?:\/\/)?([\w\d-_]+)\.([\w\d-_\.]+)\/?\??([^#\n\r]*)?#?([^\n\r]*)").Captures.Count > 0;
         }
+
+        public static string RemoveIllegalFileNameChars(string input, string replacement = "")
+        {
+            var regexSearch = new string(Path.GetInvalidFileNameChars()) + new string(Path.GetInvalidPathChars());
+            var r = new Regex(string.Format("[{0}]", Regex.Escape(regexSearch)));
+            return r.Replace(input, replacement);
+        }
+
+        /// <summary>
+        /// https://stackoverflow.com/a/5259991
+        /// </summary>
+        /// <param name="fileName"></param>
+        /// <param name="newExtension"></param>
+        /// <returns></returns>
+        public static string ChangeFileExtension(this string fileName, string newExtension) { 
+            return Path.ChangeExtension(fileName, $".{newExtension}");
+        }
+
+        /// <summary>
+        /// https://stackoverflow.com/questions/8374742/regex-last-occurrence
+        /// </summary>
+        /// <param name="imageName"></param>
+        /// <param name="toReplace"></param>
+        /// <param name="toReplaceWith"></param>
+        /// <returns></returns>
+        public static string ReplaceLastInstance(this string imageName, string toReplace, string toReplaceWith) {
+            var expression = $@"(?:.(?!{toReplace}))+$";
+
+            return Regex.Replace(imageName, expression, toReplaceWith);
+        }
+
+        public static string GetUrlFromText(this string text) 
+        {
+            return Regex.Match(text, @"((\w+:\/\/)[-a-zA-Z0-9:@;?&=\/%\+\.\*!'\(\),\$_\{\}\^~\[\]`#|]+)").Value;
+        }
     }
 }

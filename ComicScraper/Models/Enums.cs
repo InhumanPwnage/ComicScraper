@@ -29,5 +29,20 @@ namespace ComicScraper.Models
             [Description("Success")]
             SuccessDelete = 6,
         }
+
+        public enum FileExtensions 
+        {
+            [Description("JPEG")]
+            jpg = 0,
+
+            [Description("JPEG 2")]
+            jpeg = 1,
+
+            [Description("GIF")]
+            gif = 2,
+
+            [Description("PNG")]
+            png = 3,
+        }
     }
 }

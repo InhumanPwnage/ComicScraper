@@ -12,6 +12,7 @@ namespace ComicScraper.Models
         public static string ComicsFolderName = "Comics";
 
         public static string DefaultAttributeToLookForInImage = "src";
+        public static string DefaultTagToLookFor = "img";
 
         public static string NoComicSite = "No matching comic site to delete.";
         public static string AddedComicSite = "Successfully added new Comic site to scrape from.";

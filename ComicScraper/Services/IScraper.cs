@@ -1,5 +1,6 @@
 ﻿using ComicScraper.Models;
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -9,8 +10,8 @@ namespace ComicScraper.Services
 {
     public interface IScraper
     {
-        ResultModel Scrape_Comic(ComicModel model);
+        (ResultModel, ConcurrentDictionary<long, string>) Scrape_Comic(ComicModel model, bool isProperScrape);
 
-        ResultModel Test_Scrape_Comic(ComicModel model);
+        //(ResultModel, List<string>) Test_Scrape_Comic(ComicModel model);
     }
 }
